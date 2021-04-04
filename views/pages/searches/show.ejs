@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>Book Collection</title>
+</head>
+
+<body>
+  <main>
+    <% searchResults.forEach(book=> {%>
+      <p>
+        <%= book.title %>
+        
+      </p>
+      <p>
+        <%= book.authors %>
+        
+      </p>
+      <p>
+        <%= book.description %>
+        
+      </p>
+      <% }) %>
+
+  </main>
+</body>
+
+</html>
