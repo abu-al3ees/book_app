@@ -1,15 +1,23 @@
 'use strict';
 
 // Application Dependencies
+//require("dotenv").config();
 const express = require('express');
 const superagent = require('superagent');
+const cors=require('cors');
+const pg=require('pg');
+
 
 // Application Setup
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Application Middleware
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static('./public'));
+app.use(cors());
+
+const client=new pg.Client(process.env.DATABASE_URL);
 // Set the view engine for server-side templating
 app.set('view engine', 'ejs');
 
@@ -26,7 +34,7 @@ app.post('/searches', createSearch);
 // Catch-all
 app.get('*', (request, response) => response.status(404).send('This route does not exist'));
 
-app.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
+//app.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
 
 // Constructor
 function Book(info) {
@@ -35,6 +43,7 @@ function Book(info) {
   this.title = info.title || 'No title available';
   this.authors=info.authors;
   this.description=info.description;
+  this.image=info.imageLinks ? info.imageLinks.thumbnail : 'https://i.imgur.com/J5LVHEL.jpg';
 
 }
 
@@ -71,3 +80,9 @@ function createSearch(request, response) {
     response.render('pages/searches/show', { searchResults: results })
   });
 }
+
+
+
+client.connect().then(() =>
+  app.listen(PORT, () => console.log(`Listening on port: ${PORT}`))
+);

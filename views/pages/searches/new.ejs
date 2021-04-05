@@ -3,17 +3,18 @@
 
 <head>
   <title>Book Collection</title>
+  <link rel="stylesheet" href="../style/base.css"/>
 </head>
 
 <body>
   <main>
     <h4>Search by Title or Author</h4>
     <form action="/searches" method="post">
-      <input type="text" name="search" placeholder="Enter a title or author" required>
+      <input type="text" name="search" placeholder="Enter a title or author" required class="input1">
       <fieldset>
         <label for="title">
           <span>Title</span>
-          <input type="radio" name="searchBy" value="title" required>
+          <input type="radio" name="searchBy" value="title" required >
         </label>
       </fieldset>
       <fieldset>

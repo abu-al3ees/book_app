@@ -1,0 +1,27 @@
+section{
+background-color: grey;
+}
+.img_hand{
+background-color: blue;
+}
+p{
+background-color: brown;
+width: 350px;
+}
+.p1{
+background-color: chartreuse;
+}
+.p2{
+background-color: darkcyan;
+}
+.p3{
+background-color: darkgreen;
+}
+.all{
+  
+}
+
+@media only screen and (min-width: 551px){
+ 
+    
+    }

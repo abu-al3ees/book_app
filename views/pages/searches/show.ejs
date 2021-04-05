@@ -3,25 +3,32 @@
 
 <head>
   <title>Book Collection</title>
+  <link rel="stylesheet" href="../style/layout.css"/>
 </head>
 
 <body>
   <main>
+    <section>
     <% searchResults.forEach(book=> {%>
-      <p>
+      <div class="all">
+      <div class="imge_hand">
+        <img src=<%= book.image %>>
+      </div>
+      <p class="p1">
         <%= book.title %>
         
       </p>
-      <p>
+      <p class="p2">
         <%= book.authors %>
         
       </p>
-      <p>
+      <p class="p3">
         <%= book.description %>
         
       </p>
       <% }) %>
-
+      </div>
+    </section>
   </main>
 </body>
 
