@@ -28,6 +28,7 @@ app.get('/searches/new', showForm);
 app.post('/books',createBook);
 app.post('/searches', createSearch);
 app.get('/books/:id', getOneBook);
+app.delete('/books/:id', deleteBook);
 app.get('*', (request, response) => response.status(404).send('This route does not exist'));
 
 
@@ -90,6 +91,28 @@ function createBook(request, response) {
 function showForm(request, response) {
   response.render('pages/searches/new.ejs');
 }
+
+
+function deleteBook(request, response) {
+  let SQL = 'DELETE FROM book WHERE id=$1;';
+  let values = [request.params.id];
+
+  return client.query(SQL, values)
+  .then (results => {
+     response.redirect(`/books/${results.rows[0].id}` )})
+    .catch(() => response.status(500).render('pages/error'), {err: 'oops'});
+}
+
+
+
+
+
+
+
+
+
+
+
 
 // No API key required
 // Console.log request.body and request.body.search
