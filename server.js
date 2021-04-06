@@ -1,11 +1,12 @@
 'use strict';
 
 // Application Dependencies
-//require("dotenv").config();
+
 const express = require('express');
 const superagent = require('superagent');
 const cors=require('cors');
 const pg=require('pg');
+require('dotenv').config();
 
 
 // Application Setup
@@ -22,37 +23,70 @@ const client=new pg.Client(process.env.DATABASE_URL);
 app.set('view engine', 'ejs');
 
 // API Routes
-// Renders the home page
-app.get('/', renderHomePage);
-
-// Renders the search form
+app.get('/', getBooks); 
 app.get('/searches/new', showForm);
-
-// Creates a new search to the Google Books API
+app.post('/books',createBook);
 app.post('/searches', createSearch);
-
-// Catch-all
+app.get('/books/:id', getOneBook);
 app.get('*', (request, response) => response.status(404).send('This route does not exist'));
 
-//app.listen(PORT, () => console.log(`Listening on port: ${PORT}`));
 
 // Constructor
 function Book(info) {
   const placeholderImage = 'https://i.imgur.com/J5LVHEL.jpg';
 
   this.title = info.title || 'No title available';
-  this.authors=info.authors;
+  this.author=info.authors;
+  this.isbn=info.industryIdentifiers ? info.industryIdentifiers[0].identifier: 'No isbn';
   this.description=info.description;
-  this.image=info.imageLinks ? info.imageLinks.thumbnail : 'https://i.imgur.com/J5LVHEL.jpg';
+  this.image_url=info.imageLinks ? info.imageLinks.thumbnail : 'https://i.imgur.com/J5LVHEL.jpg';
 
 }
+function getBooks(request, response) {
+  let SQL = 'SELECT * FROM book;';
+
+  return client.query(SQL)
+    .then(results => {
+      if (results.rows.rowCount === 0) {
+        response.render('pages/searches/search');
+      } else {
+        response.render('pages/index', { books: results.rows })
+      }
+    })
+    .catch(() => response.status(500).render('pages/error'), {err: 'oops'}); 
+}
+
+
+function getOneBook(request, response) {
+  const id= request.params.id;
+  const myReq='SELECT * FROM book WHERE id=$1 ;'
+  const idValue= [id];
+   client.query(myReq,idValue)
+    .then(result => {
+      console.log(result.rows[0]);
+      response.render('pages/books/detail', { book: result.rows[0]})
+    })
+    .catch(() => response.status(500).render('pages/error'), {err: 'oops'});
+}
+
+
+
+
+
 
 // Note that .ejs file extension is not required
 
-function renderHomePage(request, response) {
-  response.render('pages/index');
-}
+function createBook(request, response) {
+  let { title, author, isbn, image_url, description} = request.body;
+  let SQL = 'INSERT INTO book(title, author, isbn, description, image_url) VALUES($1, $2, $3, $4, $5) RETURNING id;';
+  let values = [title, author, isbn, description, image_url];
 
+   client.query(SQL, values)
+    .then (results => {
+     // console.log(results.rows[0]);
+      response.redirect(`/books/${results.rows[0].id}` )})
+    .catch(() => response.status(500).render('pages/error'), {err: 'oops'});
+}
 function showForm(request, response) {
   response.render('pages/searches/new.ejs');
 }
@@ -77,6 +111,7 @@ function createSearch(request, response) {
   superagent.get(url).query(queryObj).then(apiResponse => {
     return apiResponse.body.items.map(bookResult => new Book(bookResult.volumeInfo))
   }).then(results => {
+    console.log(results);
     response.render('pages/searches/show', { searchResults: results })
   });
 }
