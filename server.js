@@ -6,10 +6,11 @@ const express = require('express');
 const superagent = require('superagent');
 const cors=require('cors');
 const pg=require('pg');
+const methodOverride = require('method-override');
 require('dotenv').config();
 
 
-// Application Setup
+// Application Stup
 const app = express();
 const PORT = process.env.PORT || 3000;
 
@@ -17,6 +18,7 @@ const PORT = process.env.PORT || 3000;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('./public'));
 app.use(cors());
+app.use(methodOverride('_method'));
 
 const client=new pg.Client(process.env.DATABASE_URL);
 // Set the view engine for server-side templating
@@ -28,6 +30,8 @@ app.get('/searches/new', showForm);
 app.post('/books',createBook);
 app.post('/searches', createSearch);
 app.get('/books/:id', getOneBook);
+app.put('/books/:id', updateBook);
+app.delete('/books/:id', deleteBook);
 app.get('*', (request, response) => response.status(404).send('This route does not exist'));
 
 
@@ -90,6 +94,38 @@ function createBook(request, response) {
 function showForm(request, response) {
   response.render('pages/searches/new.ejs');
 }
+
+function updateBook(req, res) {
+  let {title, author, isbn, image_url, description} = req.body;
+  let SQL = 'UPDATE book SET title=$1, author=$2, isbn=$3, image_url=$4, description=$5 WHERE id=$6';
+  let values = [title, author, isbn, image_url, description,req.params.id];
+
+  client.query(SQL, values)
+    .then(()=>res.redirect(`/books/${req.params.id}`))
+    // .catch(error => handleError(error, res));
+}
+
+
+function deleteBook(request, response) {
+  let SQL = 'DELETE FROM book WHERE id=$1;';
+  let values = [request.params.id];
+
+  return client.query(SQL, values)
+  .then (() => {
+     response.redirect(`/` )})
+    .catch(() => response.status(500).render('pages/error'), {err: 'oops'});
+}
+
+
+
+
+
+
+
+
+
+
+
 
 // No API key required
 // Console.log request.body and request.body.search
